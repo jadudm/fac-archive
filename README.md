@@ -1,13 +1,13 @@
-# fac-copy
+# fac-tool
 
 
 ## about
 
-`fac-copy` serves to:
+`fac-tool` provides utilities for working with Federal Audit Clearinghouse data (FAC). With it, you can:
 
-1. Make a complete copy of the *data* in the Federal Audit Clearinghouse (FAC)
-2. Update the data incrementally
-3. Download of all of the public audit reports from the FAC
+1. make a complete copy of the *data* in the FAC
+2. update the data incrementally
+3. download of all of the public audit reports from the FAC
 
 There is roughly 6GB of data in the FAC. There are roughly 2.5TB of audit reports (Feb 2025).
 
@@ -19,7 +19,7 @@ There is roughly 6GB of data in the FAC. There are roughly 2.5TB of audit report
 
 * `fac-copy archive` will create a new archive of all of the FAC data 
 * `fac-copy update` updates an existing archive
-* `fac-copy pdfs` will download PDFs of audit reports
+* `fac-copy reports` will download PDFs of audit reports
 
 
 
