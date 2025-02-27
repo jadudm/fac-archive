@@ -4,15 +4,35 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/jadudm/fac-tool/internal/config"
+	"github.com/jadudm/fac-tool/internal/sqlite"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
+func create_sqlite_db() {
+	current := time.Now()
+	db_name := fmt.Sprintf("%s-fac.sqlite", current.Format("2006-01-02-15-04-05"))
+	_, queries := sqlite.CreateTables(db_name)
+	ctx := context.Background()
+	gs, err := queries.GetGenerals(ctx)
+	if err != nil {
+		zap.L().Error("could not fetch generals", zap.Error(err))
+	}
+	log.Println(gs)
+}
+
 func archive(cmd *cobra.Command, args []string) {
-	fmt.Println("archive called")
 	config.Init()
+	fmt.Println("archive called")
+	fmt.Printf("api url: %s\n", viper.GetString("api.url"))
+	create_sqlite_db()
 }
 
 // archiveCmd represents the archive command

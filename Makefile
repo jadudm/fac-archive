@@ -1,4 +1,8 @@
 SHELL:=/bin/bash
 
-all:
-	pushd cmd/fac-copy ; go build . ; popd
+all: clean
+	pushd internal/sqlite ; sqlc generate ; popd
+	go build -tags "libsqlite3 linux"
+
+clean:
+	rm -f fac-tool

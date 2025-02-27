@@ -5,6 +5,7 @@ go 1.23.2
 replace github.com/jadudm/fac-tool/internal/config => ./internal/config/
 
 require (
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	go.uber.org/zap v1.27.0
