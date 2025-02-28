@@ -5,11 +5,57 @@
 package sqlite
 
 import (
+	"database/sql"
 	"time"
 )
 
+type FederalAward struct {
+	ID                            int64
+	RawID                         int64
+	ReportID                      string
+	AuditYear                     int64
+	AdditionalAwardIdentification string
+	AmountExpended                int64
+	AwardReference                string
+	ClusterName                   string
+	ClusterTotal                  int64
+	FederalAgencyPrefix           string
+	FederalAwardExtension         string
+	FederalProgramName            string
+	FederalProgramTotal           int64
+	FindingsCount                 interface{}
+	IsDirect                      string
+	IsLoan                        string
+	IsMajor                       string
+	IsPassthroughAward            string
+	LoanBalance                   string
+	AuditReportType               string
+	OtherClusterName              string
+	PassthroughAmount             interface{}
+	StateClusterName              string
+}
+
+type Finding struct {
+	ID                      int64
+	RawID                   int64
+	ReportID                string
+	AuditYear               int64
+	AwardReference          string
+	ReferenceNumber         string
+	IsMaterialWeakness      string
+	IsModifiedOpinion       string
+	IsOtherFindings         string
+	IsOtherMatters          string
+	IsQuestionedCosts       string
+	IsRepeatFinding         string
+	IsSignificantDeficiency string
+	PriorFindingRefNumbers  string
+	TypeRequirement         string
+}
+
 type General struct {
 	ID                                         int64
+	RawID                                      int64
 	ReportID                                   string
 	AuditeeCertifyName                         string
 	AuditeeCertifyTitle                        string
@@ -72,8 +118,28 @@ type General struct {
 	AuditorCertifyTitle                        string
 }
 
+type NotesToSefa struct {
+	ID                   int64
+	RawID                int64
+	ReportID             string
+	AuditYear            int64
+	AccountingPolicies   string
+	IsMinimisRateUsed    string
+	RateExplained        string
+	Content              string
+	Title                string
+	ContainsChartOrTable string
+}
+
+type Pdf struct {
+	ID           int64
+	RawID        sql.NullInt64
+	IsDownloaded sql.NullBool
+}
+
 type Raw struct {
-	ID     int64
-	Source string
-	Json   string
+	ID        int64
+	Source    string
+	Json      string
+	CreatedAt sql.NullTime
 }

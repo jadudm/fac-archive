@@ -10,7 +10,7 @@ import (
 )
 
 const getGenerals = `-- name: GetGenerals :many
-SELECT id, report_id, auditee_certify_name, auditee_certify_title, auditee_contact_name, auditee_email, auditee_name, auditee_phone, auditee_contact_title, auditee_address_line_1, auditee_city, auditee_state, auditee_ein, auditee_uei, is_additional_ueis, auditee_zip, auditor_phone, auditor_state, auditor_city, auditor_contact_title, auditor_address_line_1, auditor_zip, auditor_country, auditor_contact_name, auditor_email, auditor_firm_name, auditor_foreign_address, auditor_ein, cognizant_agency, oversight_agency, date_created, ready_for_certification_date, auditor_certified_date, auditee_certified_date, submitted_date, fy_end_date, fy_start_date, audit_year, audit_type, gaap_results, sp_framework_basis, is_sp_framework_required, sp_framework_opinions, is_going_concern_included, is_internal_control_deficiency_disclosed, is_internal_control_material_weakness_disclosed, is_material_noncompliance_disclosed, is_aicpa_audit_guide_included, dollar_threshold, is_low_risk_auditee, agencies_with_prior_findings, entity_type, number_months, audit_period_covered, total_amount_expended, type_audit_code, is_public, data_source, fac_accepted_date, auditor_certify_name, auditor_certify_title FROM general
+SELECT id, raw_id, report_id, auditee_certify_name, auditee_certify_title, auditee_contact_name, auditee_email, auditee_name, auditee_phone, auditee_contact_title, auditee_address_line_1, auditee_city, auditee_state, auditee_ein, auditee_uei, is_additional_ueis, auditee_zip, auditor_phone, auditor_state, auditor_city, auditor_contact_title, auditor_address_line_1, auditor_zip, auditor_country, auditor_contact_name, auditor_email, auditor_firm_name, auditor_foreign_address, auditor_ein, cognizant_agency, oversight_agency, date_created, ready_for_certification_date, auditor_certified_date, auditee_certified_date, submitted_date, fy_end_date, fy_start_date, audit_year, audit_type, gaap_results, sp_framework_basis, is_sp_framework_required, sp_framework_opinions, is_going_concern_included, is_internal_control_deficiency_disclosed, is_internal_control_material_weakness_disclosed, is_material_noncompliance_disclosed, is_aicpa_audit_guide_included, dollar_threshold, is_low_risk_auditee, agencies_with_prior_findings, entity_type, number_months, audit_period_covered, total_amount_expended, type_audit_code, is_public, data_source, fac_accepted_date, auditor_certify_name, auditor_certify_title FROM general
 `
 
 func (q *Queries) GetGenerals(ctx context.Context) ([]General, error) {
@@ -24,6 +24,7 @@ func (q *Queries) GetGenerals(ctx context.Context) ([]General, error) {
 		var i General
 		if err := rows.Scan(
 			&i.ID,
+			&i.RawID,
 			&i.ReportID,
 			&i.AuditeeCertifyName,
 			&i.AuditeeCertifyTitle,
@@ -96,4 +97,20 @@ func (q *Queries) GetGenerals(ctx context.Context) ([]General, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const rawInsert = `-- name: RawInsert :one
+INSERT INTO raw (source, json) VALUES (?, ?) RETURNING id
+`
+
+type RawInsertParams struct {
+	Source string
+	Json   string
+}
+
+func (q *Queries) RawInsert(ctx context.Context, arg RawInsertParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, rawInsert, arg.Source, arg.Json)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
