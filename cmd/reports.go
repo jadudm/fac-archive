@@ -50,9 +50,18 @@ func getReports(cmd *cobra.Command) (int, int64) {
 
 	for _, rid := range rids {
 		url := fac.PdfBase + rid.ReportID
+		// Make subdirs, or we could end up with too many files in one place.
+		// Literally... `ls` and `dir` break on some platforms with too many files.
+		path := filepath.Join(cmd.Flag("report-destination").Value.String(),
+			rid.FacAcceptedDate.Format("2006-01-02"))
+
+		err := os.MkdirAll(path, 0755)
+		if err != nil {
+			zap.L().Error("could not make destination directory", zap.Error(err))
+		}
+
 		out, err := os.Create(
-			filepath.Join(cmd.Flag("report-destination").Value.String(),
-				fmt.Sprintf("%s.pdf", rid.ReportID)))
+			filepath.Join(path, fmt.Sprintf("%s.pdf", rid.ReportID)))
 		if err != nil {
 			zap.L().Error("could not create report file", zap.Error(err))
 		}
