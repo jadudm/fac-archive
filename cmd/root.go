@@ -1,20 +1,18 @@
 /*
 Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
 	"os"
 
+	"github.com/jadudm/fac-tool/internal/config"
 	"github.com/spf13/cobra"
 )
 
-
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "com.jadud.faccopy",
+	Use:   "fac-tool",
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
@@ -37,6 +35,8 @@ func Execute() {
 }
 
 func init() {
+	config.Init()
+
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
@@ -45,7 +45,8 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().String("sqlite", "", "SQLite archive file")
+	rootCmd.MarkPersistentFlagRequired("sqlite")
+
 }
-
-

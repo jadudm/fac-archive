@@ -2,17 +2,47 @@
 // versions:
 //   sqlc v1.27.0
 
-package sqlite
+package archivedb
 
 import (
 	"database/sql"
 	"time"
 )
 
+type AdditionalEin struct {
+	ID            int64
+	RawID         int64
+	ReportID      string
+	AuditeeUei    string
+	AuditYear     int64
+	AdditionalEin string
+}
+
+type AdditionalUei struct {
+	ID            int64
+	RawID         int64
+	ReportID      string
+	AuditeeUei    string
+	AuditYear     int64
+	AdditionalUei string
+}
+
+type CorrectiveActionPlan struct {
+	ID                   int64
+	RawID                int64
+	ReportID             string
+	AuditeeUei           string
+	AuditYear            int64
+	FindingRefNumber     string
+	ContainsChartOrTable string
+	PlannedAction        string
+}
+
 type FederalAward struct {
 	ID                            int64
 	RawID                         int64
 	ReportID                      string
+	AuditeeUei                    string
 	AuditYear                     int64
 	AdditionalAwardIdentification string
 	AmountExpended                int64
@@ -39,6 +69,7 @@ type Finding struct {
 	ID                      int64
 	RawID                   int64
 	ReportID                string
+	AuditeeUei              string
 	AuditYear               int64
 	AwardReference          string
 	ReferenceNumber         string
@@ -53,10 +84,23 @@ type Finding struct {
 	TypeRequirement         string
 }
 
+type FindingsText struct {
+	ID                   int64
+	RawID                int64
+	ReportID             string
+	AuditeeUei           string
+	AuditYear            int64
+	FindingRefNumber     string
+	ContainsChartOrTable string
+	FindingText          string
+}
+
 type General struct {
 	ID                                         int64
 	RawID                                      int64
 	ReportID                                   string
+	AuditeeUei                                 string
+	AuditYear                                  int64
 	AuditeeCertifyName                         string
 	AuditeeCertifyTitle                        string
 	AuditeeContactName                         string
@@ -68,7 +112,6 @@ type General struct {
 	AuditeeCity                                string
 	AuditeeState                               string
 	AuditeeEin                                 string
-	AuditeeUei                                 string
 	IsAdditionalUeis                           string
 	AuditeeZip                                 string
 	AuditorPhone                               string
@@ -92,7 +135,6 @@ type General struct {
 	SubmittedDate                              time.Time
 	FyEndDate                                  time.Time
 	FyStartDate                                time.Time
-	AuditYear                                  string
 	AuditType                                  string
 	GaapResults                                string
 	SpFrameworkBasis                           string
@@ -122,6 +164,7 @@ type NotesToSefa struct {
 	ID                   int64
 	RawID                int64
 	ReportID             string
+	AuditeeUei           string
 	AuditYear            int64
 	AccountingPolicies   string
 	IsMinimisRateUsed    string
@@ -129,6 +172,17 @@ type NotesToSefa struct {
 	Content              string
 	Title                string
 	ContainsChartOrTable string
+}
+
+type Passthrough struct {
+	ID              int64
+	RawID           int64
+	ReportID        string
+	AuditeeUei      string
+	AuditYear       int64
+	AwardReference  string
+	PassthroughID   string
+	PassthroughName string
 }
 
 type Pdf struct {
@@ -142,4 +196,22 @@ type Raw struct {
 	Source    string
 	Json      string
 	CreatedAt sql.NullTime
+}
+
+type SecondaryAuditor struct {
+	ID             int64
+	RawID          int64
+	ReportID       string
+	AuditeeUei     string
+	AuditYear      int64
+	AuditorEin     string
+	AuditorName    string
+	ContactName    string
+	ContactTitle   string
+	ContactEmail   string
+	ContactPhone   string
+	AddressStreet  string
+	AddressCity    string
+	AddressState   string
+	AddressZipcode string
 }

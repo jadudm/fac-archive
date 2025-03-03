@@ -1,7 +1,10 @@
 SHELL:=/bin/bash
 
-all: clean
-	pushd internal/sqlite ; sqlc generate ; popd
+generate:
+	pushd internal/archivedb ; sqlc generate ; popd
+
+
+all: clean generate
 	go build -tags "libsqlite3 linux"
 
 clean:

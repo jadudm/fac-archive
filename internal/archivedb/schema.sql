@@ -27,6 +27,74 @@ CREATE TRIGGER IF NOT EXISTS trig_raw_to_pdf
 END;
 
 
+----------------------------------------------------------
+-- general
+----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS general (
+	id INTEGER PRIMARY KEY,
+	raw_id INTEGER NOT NULL,
+	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
+	audit_year integer NOT NULL,
+	auditee_certify_name text NOT NULL,
+	auditee_certify_title text NOT NULL,
+	auditee_contact_name text NOT NULL,
+	auditee_email text NOT NULL,
+	auditee_name text NOT NULL,
+	auditee_phone text NOT NULL,
+	auditee_contact_title text NOT NULL,
+	auditee_address_line_1 text NOT NULL,
+	auditee_city text NOT NULL,
+	auditee_state text NOT NULL,
+	auditee_ein text NOT NULL,
+	is_additional_ueis text NOT NULL,
+	auditee_zip text NOT NULL,
+	auditor_phone text NOT NULL,
+	auditor_state text NOT NULL,
+	auditor_city text NOT NULL,
+	auditor_contact_title text NOT NULL,
+	auditor_address_line_1 text NOT NULL,
+	auditor_zip text NOT NULL,
+	auditor_country text NOT NULL,
+	auditor_contact_name text NOT NULL,
+	auditor_email text NOT NULL,
+	auditor_firm_name text NOT NULL,
+	auditor_foreign_address text NOT NULL,
+	auditor_ein text NOT NULL,
+	cognizant_agency text NULL,
+	oversight_agency text NULL,
+	date_created date NOT NULL,
+	ready_for_certification_date date NOT NULL,
+	auditor_certified_date date NOT NULL,
+	auditee_certified_date date NOT NULL,
+	submitted_date date NOT NULL,
+	fy_end_date date NOT NULL,
+	fy_start_date date NOT NULL,
+	audit_type text NOT NULL,
+	gaap_results text NOT NULL,
+	sp_framework_basis text NOT NULL,
+	is_sp_framework_required text NOT NULL,
+	sp_framework_opinions text NOT NULL,
+	is_going_concern_included text NOT NULL,
+	is_internal_control_deficiency_disclosed text NOT NULL,
+	is_internal_control_material_weakness_disclosed text NOT NULL,
+	is_material_noncompliance_disclosed text NOT NULL,
+	is_aicpa_audit_guide_included text NOT NULL,
+	dollar_threshold int8 NOT NULL,
+	is_low_risk_auditee text NOT NULL,
+	agencies_with_prior_findings text NOT NULL,
+	entity_type text NOT NULL,
+	number_months text NOT NULL,
+	audit_period_covered text NOT NULL,
+	total_amount_expended int8 NOT NULL,
+	type_audit_code text NOT NULL,
+	is_public bool NOT NULL,
+	data_source text NOT NULL,
+	fac_accepted_date date NOT NULL,
+	auditor_certify_name text NOT NULL,
+	auditor_certify_title text NOT NULL
+);
+
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_general 
   AFTER INSERT 
   ON raw
@@ -36,6 +104,8 @@ BEGIN
 	(
 		raw_id,
 		report_id,
+		auditee_uei,
+		audit_year,
 		auditee_certify_name,
 		auditee_certify_title,
 		auditee_contact_name,
@@ -47,7 +117,6 @@ BEGIN
 		auditee_city,
 		auditee_state,
 		auditee_ein,
-		auditee_uei,
 		is_additional_ueis,
 		auditee_zip,
 		auditor_phone,
@@ -71,7 +140,6 @@ BEGIN
 		submitted_date,
 		fy_end_date,
 		fy_start_date,
-		audit_year,
 		audit_type,
 		gaap_results,
 		sp_framework_basis,
@@ -100,6 +168,8 @@ BEGIN
 		(
 			new.id, 
 			json_extract(new.json, '$.report_id'),
+			json_extract(new.json, '$.auditee_uei'),
+			json_extract(new.json, '$.audit_year'),
 			json_extract(new.json, '$.auditee_certify_name'),
 			json_extract(new.json, '$.auditee_certify_title'),
 			json_extract(new.json, '$.auditee_contact_name'),
@@ -111,7 +181,6 @@ BEGIN
 			json_extract(new.json, '$.auditee_city'),
 			json_extract(new.json, '$.auditee_state'),
 			json_extract(new.json, '$.auditee_ein'),
-			json_extract(new.json, '$.auditee_uei'),
 			json_extract(new.json, '$.is_additional_ueis'),
 			json_extract(new.json, '$.auditee_zip'),
 			json_extract(new.json, '$.auditor_phone'),
@@ -135,7 +204,6 @@ BEGIN
 			json_extract(new.json, '$.submitted_date'),
 			json_extract(new.json, '$.fy_end_date'),
 			json_extract(new.json, '$.fy_start_date'),
-			json_extract(new.json, '$.audit_year'),
 			json_extract(new.json, '$.audit_type'),
 			json_extract(new.json, '$.gaap_results'),
 			json_extract(new.json, '$.sp_framework_basis'),
@@ -162,81 +230,14 @@ BEGIN
 		);
 END;
 
--- CREATE TABLE IF NOT EXISTS smol (
--- 	id INTEGER PRIMARY KEY,
--- 	raw_id INTEGER NOT NULL,
--- 	report_id TEXT NOT NULL
--- );
-
-CREATE TABLE IF NOT EXISTS general (
-	id INTEGER PRIMARY KEY,
-	raw_id INTEGER NOT NULL,
-	report_id text NOT NULL,
-	auditee_certify_name text NOT NULL,
-	auditee_certify_title text NOT NULL,
-	auditee_contact_name text NOT NULL,
-	auditee_email text NOT NULL,
-	auditee_name text NOT NULL,
-	auditee_phone text NOT NULL,
-	auditee_contact_title text NOT NULL,
-	auditee_address_line_1 text NOT NULL,
-	auditee_city text NOT NULL,
-	auditee_state text NOT NULL,
-	auditee_ein text NOT NULL,
-	auditee_uei text NOT NULL,
-	is_additional_ueis text NOT NULL,
-	auditee_zip text NOT NULL,
-	auditor_phone text NOT NULL,
-	auditor_state text NOT NULL,
-	auditor_city text NOT NULL,
-	auditor_contact_title text NOT NULL,
-	auditor_address_line_1 text NOT NULL,
-	auditor_zip text NOT NULL,
-	auditor_country text NOT NULL,
-	auditor_contact_name text NOT NULL,
-	auditor_email text NOT NULL,
-	auditor_firm_name text NOT NULL,
-	auditor_foreign_address text NOT NULL,
-	auditor_ein text NOT NULL,
-	cognizant_agency text NULL,
-	oversight_agency text NULL,
-	date_created date NOT NULL,
-	ready_for_certification_date date NOT NULL,
-	auditor_certified_date date NOT NULL,
-	auditee_certified_date date NOT NULL,
-	submitted_date date NOT NULL,
-	fy_end_date date NOT NULL,
-	fy_start_date date NOT NULL,
-	audit_year text NOT NULL,
-	audit_type text NOT NULL,
-	gaap_results text NOT NULL,
-	sp_framework_basis text NOT NULL,
-	is_sp_framework_required text NOT NULL,
-	sp_framework_opinions text NOT NULL,
-	is_going_concern_included text NOT NULL,
-	is_internal_control_deficiency_disclosed text NOT NULL,
-	is_internal_control_material_weakness_disclosed text NOT NULL,
-	is_material_noncompliance_disclosed text NOT NULL,
-	is_aicpa_audit_guide_included text NOT NULL,
-	dollar_threshold int8 NOT NULL,
-	is_low_risk_auditee text NOT NULL,
-	agencies_with_prior_findings text NOT NULL,
-	entity_type text NOT NULL,
-	number_months text NOT NULL,
-	audit_period_covered text NOT NULL,
-	total_amount_expended int8 NOT NULL,
-	type_audit_code text NOT NULL,
-	is_public bool NOT NULL,
-	data_source text NOT NULL,
-	fac_accepted_date date NOT NULL,
-	auditor_certify_name text NOT NULL,
-	auditor_certify_title text NOT NULL
-);
-
+----------------------------------------------------------
+-- federal_awards
+----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS federal_awards (
 	id INTEGER PRIMARY KEY,
 	raw_id INTEGER NOT NULL,
 	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
 	audit_year integer NOT NULL,
 	additional_award_identification text NOT NULL,
 	amount_expended int8 NOT NULL,
@@ -269,6 +270,7 @@ BEGIN
 	(
 		raw_id,
 		report_id,
+		auditee_uei,
 		audit_year,
 		additional_award_identification,
 		amount_expended,
@@ -294,6 +296,7 @@ BEGIN
 	(
 		new.id,
 		json_extract(new.json, '$.report_id'),
+		json_extract(new.json, '$.auditee_uei'),
 		json_extract(new.json, '$.audit_year'),
 		json_extract(new.json, '$.additional_award_identification'),
 		json_extract(new.json, '$.amount_expended'),
@@ -317,10 +320,14 @@ BEGIN
 	);
 	END;
 
+----------------------------------------------------------
+-- findings
+----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS findings (
 	id INTEGER PRIMARY KEY,
 	raw_id INTEGER NOT NULL,
 	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
 	audit_year integer NOT NULL,
 	award_reference text NOT NULL,
 	reference_number text NOT NULL,
@@ -335,7 +342,6 @@ CREATE TABLE IF NOT EXISTS findings (
 	type_requirement text NOT NULL
 );
 
-
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_findings
   AFTER INSERT 
   ON raw
@@ -345,6 +351,7 @@ BEGIN
 	(
 		raw_id,
 		report_id,
+		auditee_uei,
 		audit_year,
 		award_reference,
 		reference_number,
@@ -362,6 +369,7 @@ BEGIN
 	(
 		new.id,
 		json_extract(new.json, '$.report_id'),
+		json_extract(new.json, '$.auditee_uei'),
 		json_extract(new.json, '$.audit_year'),
 		json_extract(new.json, '$.award_reference'),
 		json_extract(new.json, '$.reference_number'),
@@ -377,11 +385,14 @@ BEGIN
 	);
 	END;
 
-
+----------------------------------------------------------
+-- notes_to_sefa
+----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS notes_to_sefa (
 	id INTEGER PRIMARY KEY,
 	raw_id INTEGER NOT NULL,
 	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
 	audit_year integer NOT NULL,
 	accounting_policies text NOT NULL,
 	is_minimis_rate_used text NOT NULL,
@@ -401,6 +412,7 @@ BEGIN
 	(
 		raw_id,
 		report_id,
+		auditee_uei,
 		audit_year,
 		accounting_policies,
 		is_minimis_rate_used,
@@ -413,6 +425,7 @@ BEGIN
 	(
 		new.id,
 		json_extract(new.json, '$.report_id'),
+		json_extract(new.json, '$.auditee_uei'),
 		json_extract(new.json, '$.audit_year'),
 		json_extract(new.json, '$.accounting_policies'),
 		json_extract(new.json, '$.is_minimis_rate_used'),
@@ -423,4 +436,260 @@ BEGIN
 	);
 	END;
 
---	\t\tjson_extract(new.json, '$.$1'),
+----------------------------------------------------------
+-- findings_text
+----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS findings_text (
+	id INTEGER PRIMARY KEY,
+	raw_id INTEGER NOT NULL,
+	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
+	audit_year integer NOT NULL,
+	finding_ref_number text NOT NULL,
+	contains_chart_or_table text NOT NULL,
+	finding_text text NOT NULL
+);
+
+
+CREATE TRIGGER IF NOT EXISTS trig_raw_to_findings_text
+  AFTER INSERT 
+  ON raw
+  WHEN new.source = 'findings_text'
+BEGIN
+	INSERT INTO findings_text
+	(
+		raw_id,
+		report_id,
+		auditee_uei,
+		audit_year,
+		finding_ref_number,
+		contains_chart_or_table,
+		finding_text
+	) 
+	VALUES
+	(
+		new.id,
+		json_extract(new.json, '$.report_id'),
+		json_extract(new.json, '$.auditee_uei'),
+		json_extract(new.json, '$.audit_year'),
+		json_extract(new.json, '$.finding_ref_number'),
+		json_extract(new.json, '$.contains_chart_or_table'),
+		json_extract(new.json, '$.finding_text')
+	);
+	END;
+
+----------------------------------------------------------
+-- additional_ueis
+----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS additional_ueis (
+	id INTEGER PRIMARY KEY,
+	raw_id INTEGER NOT NULL,
+	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
+	audit_year integer NOT NULL,
+	additional_uei text NOT NULL
+);
+
+
+CREATE TRIGGER IF NOT EXISTS trig_raw_to_additional_ueis
+  AFTER INSERT 
+  ON raw
+  WHEN new.source = 'additional_ueis'
+BEGIN
+	INSERT INTO additional_ueis
+	(
+		raw_id,
+		report_id,
+		auditee_uei,
+		audit_year,
+		additional_uei
+	) 
+	VALUES
+	(
+		new.id,
+		json_extract(new.json, '$.report_id'),
+		json_extract(new.json, '$.auditee_uei'),
+		json_extract(new.json, '$.audit_year'),
+		json_extract(new.json, '$.additional_uei')
+	);
+	END;
+
+
+----------------------------------------------------------
+-- corrective_action_plans
+----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS corrective_action_plans (
+	id INTEGER PRIMARY KEY,
+	raw_id INTEGER NOT NULL,
+	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
+	audit_year integer NOT NULL,
+	finding_ref_number text NOT NULL,
+	contains_chart_or_table text NOT NULL,
+	planned_action text NOT NULL
+);
+
+CREATE TRIGGER IF NOT EXISTS trig_raw_to_corrective_action_plans
+  AFTER INSERT 
+  ON raw
+  WHEN new.source = 'corrective_action_plans'
+BEGIN
+	INSERT INTO corrective_action_plans
+	(
+		raw_id,
+		report_id,
+		auditee_uei,
+		audit_year,
+		finding_ref_number,
+		contains_chart_or_table,
+		planned_action
+	) 
+	VALUES
+	(
+		new.id,
+		json_extract(new.json, '$.report_id'),
+		json_extract(new.json, '$.auditee_uei'),
+		json_extract(new.json, '$.audit_year'),
+		json_extract(new.json, '$.finding_ref_number'),
+		json_extract(new.json, '$.contains_chart_or_table'),
+		json_extract(new.json, '$.planned_action')
+	);
+	END;
+
+----------------------------------------------------------
+-- passthrough
+----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS passthrough (
+	id INTEGER PRIMARY KEY,
+	raw_id INTEGER NOT NULL,
+	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
+	audit_year integer NOT NULL,
+	award_reference text NOT NULL,
+	passthrough_id text NOT NULL,
+	passthrough_name text NOT NULL
+);
+
+CREATE TRIGGER IF NOT EXISTS trig_raw_to_passthrough
+  AFTER INSERT 
+  ON raw
+  WHEN new.source = 'passthrough'
+BEGIN
+	INSERT INTO passthrough
+	(
+		raw_id,
+		report_id,
+		auditee_uei,
+		audit_year,
+		award_reference,
+		passthrough_id,
+		passthrough_name
+	) 
+	VALUES
+	(
+		new.id,
+		json_extract(new.json, '$.report_id'),
+		json_extract(new.json, '$.auditee_uei'),
+		json_extract(new.json, '$.audit_year'),
+		json_extract(new.json, '$.award_reference'),
+		json_extract(new.json, '$.passthrough_id'),
+		json_extract(new.json, '$.passthrough_name')
+	);
+	END;
+
+----------------------------------------------------------
+-- secondary_auditors
+----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS secondary_auditors (
+	id INTEGER PRIMARY KEY,
+	raw_id INTEGER NOT NULL,
+	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
+	audit_year integer NOT NULL,
+	auditor_ein text NOT NULL,
+	auditor_name text NOT NULL,
+	contact_name text NOT NULL,
+	contact_title text NOT NULL,
+	contact_email text NOT NULL,
+	contact_phone text NOT NULL,
+	address_street text NOT NULL,
+	address_city text NOT NULL,
+	address_state text NOT NULL,
+	address_zipcode text NOT NULL
+);
+
+CREATE TRIGGER IF NOT EXISTS trig_raw_to_secondary_auditors
+  AFTER INSERT 
+  ON raw
+  WHEN new.source = 'secondary_auditors'
+BEGIN
+	INSERT INTO secondary_auditors
+	(
+		raw_id,
+		report_id,
+		auditee_uei,
+		audit_year,
+		auditor_ein,
+		auditor_name,
+		contact_name,
+		contact_title,
+		contact_email,
+		contact_phone,
+		address_street,
+		address_city,
+		address_state,
+		address_zipcode
+	) 
+	VALUES
+	(
+		new.id,
+		json_extract(new.json, '$.report_id'),
+		json_extract(new.json, '$.auditee_uei'),
+		json_extract(new.json, '$.audit_year'),
+		json_extract(new.json, '$.auditor_ein'),
+		json_extract(new.json, '$.auditor_name'),
+		json_extract(new.json, '$.contact_name'),
+		json_extract(new.json, '$.contact_title'),
+		json_extract(new.json, '$.contact_email'),
+		json_extract(new.json, '$.contact_phone'),
+		json_extract(new.json, '$.address_street'),
+		json_extract(new.json, '$.address_city'),
+		json_extract(new.json, '$.address_state'),
+		json_extract(new.json, '$.address_zipcode')
+	);
+	END;
+
+----------------------------------------------------------
+-- additional_eins
+----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS additional_eins (
+	id INTEGER PRIMARY KEY,
+	raw_id INTEGER NOT NULL,
+	report_id text NOT NULL,
+	auditee_uei text NOT NULL,
+	audit_year integer NOT NULL,
+	additional_ein text NOT NULL
+);
+
+CREATE TRIGGER IF NOT EXISTS trig_raw_to_additional_eins
+  AFTER INSERT 
+  ON raw
+  WHEN new.source = 'additional_eins'
+BEGIN
+	INSERT INTO additional_eins
+	(
+		raw_id,
+		report_id,
+		auditee_uei,
+		audit_year,
+		additional_ein
+	) 
+	VALUES
+	(
+		new.id,
+		json_extract(new.json, '$.report_id'),
+		json_extract(new.json, '$.auditee_uei'),
+		json_extract(new.json, '$.audit_year'),
+		json_extract(new.json, '$.additional_ein')
+	);
+	END;

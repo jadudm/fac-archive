@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/spf13/viper"
@@ -15,6 +16,21 @@ func InitLogger() {
 	encoderCfg := zap.NewProductionEncoderConfig()
 	encoderCfg.TimeKey = ""
 
+	var level zapcore.Level
+	if viper.GetString("debug_level") == "DEBUG" {
+		level = zapcore.DebugLevel
+	} else if viper.GetString("debug_level") == "INFO" {
+		level = zapcore.InfoLevel
+	} else if viper.GetString("debug_level") == "WARN" {
+		level = zapcore.WarnLevel
+	} else if viper.GetString("debug_level") == "ERROR" {
+		level = zapcore.ErrorLevel
+	} else {
+		level = zapcore.InfoLevel
+	}
+
+	atom.SetLevel(level)
+
 	logger := zap.New(zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoderCfg),
 		zapcore.Lock(os.Stdout),
@@ -27,14 +43,17 @@ func InitLogger() {
 }
 
 func Init() {
-	InitLogger()
 
 	viper.SetConfigName("config")         // name of config file (without extension)
 	viper.SetConfigType("yaml")           // REQUIRED if the config file does not have the extension in the name
 	viper.AddConfigPath("$HOME/.factool") // call multiple times to add many search paths
 	viper.AddConfigPath(".")              // optionally look for config in the working directory
-	err := viper.ReadInConfig()           // Find and read the config file
+
+	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {
-		zap.L().Error("could not read config. exiting.")
+		log.Println("could not read config. exiting.")
 	}
+
+	InitLogger()
+
 }

@@ -4,6 +4,8 @@ go 1.23.2
 
 replace github.com/jadudm/fac-tool/internal/config => ./internal/config/
 
+replace github.com/jadudm/fac-tool/internal/archivedb => ./internal/archivedb/
+
 require (
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/spf13/cobra v1.9.1

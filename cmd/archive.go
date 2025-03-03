@@ -7,100 +7,81 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
 	"time"
 
-	"github.com/jadudm/fac-tool/internal/config"
+	"github.com/jadudm/fac-tool/internal/archivedb"
 	"github.com/jadudm/fac-tool/internal/fac"
-	"github.com/jadudm/fac-tool/internal/sqlite"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
-func create_sqlite_db(db_name string) (*sql.DB, *sqlite.Queries, error) {
-	db, queries, err := sqlite.CreateTables(db_name)
-	return db, queries, err
-}
+func archiveTable(table string, db *sql.DB, Q *archivedb.Queries) (int, error) {
+	rows_retrieved := 0
 
-func fac_get(url string) []byte {
-	client := http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		zap.L().Error("could not initialize new request", zap.Error(err))
-	}
-
-	req.Header = http.Header{
-		"X-API-Key":      {viper.GetString("api.key")},
-		"Accept-Profile": {"api_v1_1_0"},
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		//Handle Error
-	}
-
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
-
-	body, readErr := io.ReadAll(res.Body)
-	if readErr != nil {
-		log.Fatal(readErr)
-	}
-
-	return body
-}
-
-func archive_table(table string, max int, Q *sqlite.Queries) {
-
-	for offset := 0; offset <= max; offset += fac.Limit {
+	for offset := 0; offset <= fac.MaxRows; offset += fac.LimitPerQuery {
+		// The query URL communicates the limit and offset, so that we
+		// walk the entire dataset in a windowed manner. 0-20K, 20001-40K, etc.
 		url := fmt.Sprintf("%s://%s/%s?limit=%d&offset=%d",
 			viper.GetString("api.scheme"),
 			viper.GetString("api.url"),
 			table,
-			fac.Limit,
+			fac.LimitPerQuery,
 			offset,
 		)
-		body := fac_get(url)
 
-		// generals := []fac.General{}
+		zap.L().Info("fetching", zap.String("url", url))
+
+		// Fetch the JSON body
+		body, err := fac.FacGet(url)
+		if err != nil {
+			zap.L().Fatal("could not fetch body. exiting.")
+		}
+
+		// To make this generic, the tables are pulled as untyped hashmaps.
 		objects := make([]map[string]any, 0)
 		jsonErr := json.Unmarshal(body, &objects)
 		if jsonErr != nil {
 			zap.L().Fatal("could not unmarshal response", zap.Error(jsonErr))
 		}
 
+		// When we hit zero objects, we've pulled everything there is to pull
 		if len(objects) == 0 {
-			break
+			// If we get nothing back, we're done.
+			return rows_retrieved, nil
 		} else {
+			// Count the rows retrieved.
+			rows_retrieved += len(objects)
+
 			ctx := context.Background()
 
-			for _, g := range objects {
-				b, err := json.Marshal(g)
-				if err != nil {
-					zap.L().Error("could not marshal to string", zap.Error(err))
-				}
-				// zap.L().Info("inserting raw", zap.String("json", string(b)))
-				id, err := Q.RawInsert(ctx, sqlite.RawInsertParams{
-					Source: table,
-					Json:   string(b),
-				})
-				if err != nil {
-					zap.L().Error("could not insert", zap.Error(err))
-				} else {
-					zap.L().Debug("inserted id", zap.Int64("id", id))
-				}
+			// Using transactions lets us insert 20K rows at a time.
+			// Doing this means 350K rows come down in ~2m. Otherwise, it takes
+			// many, many, many hours when inserts are row-by-row.
+			tx, err := db.Begin()
+			if err != nil {
+				zap.L().Error("could not initialize transaction", zap.Error(err))
 			}
+
+			defer tx.Rollback()
+			qtx := Q.WithTx(tx)
+			for _, g := range objects {
+				archivedb.RawJsonInsert(table, qtx, ctx, g)
+			}
+			// Commit after building up 20K inserts.
+			tx.Commit()
 		}
 	}
+
+	// Should not get here.
+	return -1, errors.New(fmt.Sprintf("could not archive %s", table))
 }
 
 func archive(cmd *cobra.Command, args []string) {
-	config.Init()
+	// do this in root.go
+	//config.Init()
 
 	current := time.Now()
 	db_name := fmt.Sprintf("%s-fac.sqlite", current.Format("2006-01-02-15-04-05"))
@@ -108,41 +89,48 @@ func archive(cmd *cobra.Command, args []string) {
 	// fmt.Println("archive called")
 	// fmt.Printf("api url: %s\n", viper.GetString("api.url"))
 
-	_, queries, err := create_sqlite_db(db_name)
+	db, queries, err := archivedb.CreateSqliteDB(db_name)
 	if err != nil {
 		zap.L().Fatal("could not create database. exiting.")
 	}
 
-	archive_table("general", 20, queries)
-	archive_table("federal_awards", 20, queries)
-	archive_table("notes_to_sefa", 20, queries)
-	archive_table("findings", 20, queries)
+	for _, table := range fac.Tables {
+		start := time.Now()
+		rows, err := archiveTable(table, db, queries)
+		elapsed := time.Since(start)
 
+		if err != nil {
+			zap.L().Error("could not archive table", zap.String("table", table), zap.Error(err))
+		}
+
+		zap.L().Info("rows retrieved",
+			zap.String("table", table),
+			zap.Int("rows", rows),
+			zap.Int64("duration", int64(elapsed.Seconds())))
+	}
 }
 
 // archiveCmd represents the archive command
 var archiveCmd = &cobra.Command{
 	Use:   "archive",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Archives all data from the FAC",
+	Long: `When launched, this command creates an archive of all data in the FAC. 
+This must be run before any other commands (update, pdfs) can be run.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Usage:
+
+fac-tool archive --sqlite <filename>
+
+The --sqlite flag is required, naming the database that will be created and written to.
+`,
 	Run: archive,
 }
 
 func init() {
 	rootCmd.AddCommand(archiveCmd)
 
-	// Here you will define your flags and configuration settings.
+	// at the root
+	// archiveCmd.Flags().String("sqlite", "", "SQLite archive file")
+	// archiveCmd.MarkFlagRequired("sqlite")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// archiveCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// archiveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

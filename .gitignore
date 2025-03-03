@@ -1,3 +1,4 @@
 fac-tool
 config.yaml
 *.sqlite
+pdfs/**
