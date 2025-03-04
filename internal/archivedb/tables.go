@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	_ "embed"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/jadudm/fac-tool/internal/fac"
+	_ "modernc.org/sqlite"
 
 	"go.uber.org/zap"
 )
@@ -18,7 +19,7 @@ func CreateTables(db_name string) (*sql.DB, *Queries, error) {
 
 	zap.L().Info("creating database", zap.String("filename", db_name))
 
-	db, err := sql.Open("sqlite3", db_name)
+	db, err := sql.Open(fac.SqliteDriver, db_name)
 	if err != nil {
 		zap.L().Error("could not create database file", zap.Error(err))
 		return nil, nil, err

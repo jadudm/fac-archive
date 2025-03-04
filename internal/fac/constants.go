@@ -1,5 +1,11 @@
 package fac
 
+// for modernc
+var SqliteDriver = "sqlite"
+
+// for mattn
+//var SqliteDriver = "sqlite3"
+
 var PdfBase = "https://app.fac.gov/dissemination/report/pdf/"
 var LimitPerQuery = 20000
 var MaxRows = 10000000

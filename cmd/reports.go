@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -52,40 +53,51 @@ func getReports(cmd *cobra.Command) (int, int64) {
 		url := fac.PdfBase + rid.ReportID
 		// Make subdirs, or we could end up with too many files in one place.
 		// Literally... `ls` and `dir` break on some platforms with too many files.
-		path := filepath.Join(cmd.Flag("report-destination").Value.String(),
+		dirPath := filepath.Join(cmd.Flag("report-destination").Value.String(),
 			rid.FacAcceptedDate.Format("2006-01-02"))
 
-		err := os.MkdirAll(path, 0755)
+		err := os.MkdirAll(dirPath, 0755)
 		if err != nil {
 			zap.L().Error("could not make destination directory", zap.Error(err))
 		}
 
-		out, err := os.Create(
-			filepath.Join(path, fmt.Sprintf("%s.pdf", rid.ReportID)))
-		if err != nil {
-			zap.L().Error("could not create report file", zap.Error(err))
+		pdfPath := filepath.Join(dirPath, fmt.Sprintf("%s.pdf", rid.ReportID))
+
+		if _, err := os.Stat(pdfPath); err == nil {
+			zap.L().Debug("skipping; report exists",
+				zap.String("report_id", rid.ReportID))
+		} else if errors.Is(err, os.ErrNotExist) {
+
+			out, err := os.Create(pdfPath)
+			if err != nil {
+				zap.L().Error("could not create report file", zap.Error(err))
+			}
+			defer out.Close()
+
+			resp, err := http.Get(url)
+			if err != nil {
+				zap.L().Error("could not GET report", zap.Error(err))
+			}
+			defer resp.Body.Close()
+
+			n, err := io.Copy(out, resp.Body)
+			if err != nil {
+				zap.L().Error("could not copy bytes to disk", zap.Error(err))
+			}
+
+			zap.L().Debug("report downloaded",
+				zap.String("report_id", rid.ReportID),
+				zap.String("fac_accepted_date", rid.FacAcceptedDate.Format("2006-01-02")))
+
+			out.Close()
+			resp.Body.Close()
+			bytes_downloaded += n
+			reports_downloaded += 1
+
+		} else {
+			// Schrodinger: file may or may not exist. See err for details.
+			// Therefore, do *NOT* use !os.IsNotExist(err) to test for file existence
 		}
-		defer out.Close()
-
-		resp, err := http.Get(url)
-		if err != nil {
-			zap.L().Error("could not GET report", zap.Error(err))
-		}
-		defer resp.Body.Close()
-
-		n, err := io.Copy(out, resp.Body)
-		if err != nil {
-			zap.L().Error("could not copy bytes to disk", zap.Error(err))
-		}
-
-		zap.L().Debug("report downloaded",
-			zap.String("report_id", rid.ReportID),
-			zap.String("fac_accepted_date", rid.FacAcceptedDate.Format("2006-01-02")))
-
-		out.Close()
-		resp.Body.Close()
-		bytes_downloaded += n
-		reports_downloaded += 1
 	}
 
 	return reports_downloaded, bytes_downloaded

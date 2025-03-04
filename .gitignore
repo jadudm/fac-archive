@@ -1,4 +1,4 @@
-fac-tool
 config.yaml
 *.sqlite
 pdfs/**
+fac-tool-*

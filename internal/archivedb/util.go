@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 
+	"github.com/jadudm/fac-tool/internal/fac"
 	"go.uber.org/zap"
 )
 
@@ -14,7 +15,7 @@ func CreateSqliteDB(db_name string) (*sql.DB, *Queries, error) {
 }
 
 func GetSqliteDB(db_name string) (*sql.DB, *Queries, error) {
-	db, err := sql.Open("sqlite3", db_name)
+	db, err := sql.Open(fac.SqliteDriver, db_name)
 	if err != nil {
 		zap.L().Error("could not open database file", zap.Error(err))
 		return nil, nil, err
