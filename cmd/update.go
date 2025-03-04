@@ -235,31 +235,13 @@ Usage:
 
 fac-archive update --sqlite <filename>
 
-This will download all new records that were submitted since the archive was last updated.
+This will download all new data records that were submitted since the archive was last updated.
 
 The filename for the database that will be updated is required. It must exist.
-
-The date must be in the format YYYY-MM-DD, and all audits on-and-after that date
-will be retrieved, and new audits added to the database.
-
-This does not download PDFs.
 `,
 	Run: update,
 }
 
 func init() {
 	rootCmd.AddCommand(updateCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// updateCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-
-	//updateCmd.Flags().String("fac-accepted-date", "", "FAC accepted date, inclusive")
-	// updateCmd.MarkFlagRequired("fac-accepted-date")
-
 }
