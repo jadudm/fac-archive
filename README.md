@@ -135,7 +135,11 @@ In order to download *all reports*, enter a date before 2016 for the start date,
 
 Reports never change, so there is no reasons to re-download them repeatedly.
 
+# license
 
-## resources
+This project is released into the Public Domain in the United States of America.
 
-* https://appliedgo.com/blog/go-project-layout
+Everywhere else, it is made available under the [CC0 1.0 Universal license](https://creativecommons.org/publicdomain/zero/1.0/legalcode
+).
+
+
