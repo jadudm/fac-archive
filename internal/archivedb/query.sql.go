@@ -10,6 +10,20 @@ import (
 	"time"
 )
 
+const getRawIdFromReportId = `-- name: GetRawIdFromReportId :one
+SELECT raw_id
+FROM general
+WHERE 
+  report_id = ?
+`
+
+func (q *Queries) GetRawIdFromReportId(ctx context.Context, reportID string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getRawIdFromReportId, reportID)
+	var raw_id int64
+	err := row.Scan(&raw_id)
+	return raw_id, err
+}
+
 const getReportIdsBetween = `-- name: GetReportIdsBetween :many
 SELECT report_id, fac_accepted_date FROM general 
 WHERE 
@@ -50,6 +64,20 @@ func (q *Queries) GetReportIdsBetween(ctx context.Context, arg GetReportIdsBetwe
 	return items, nil
 }
 
+const isReportDownloaded = `-- name: IsReportDownloaded :one
+SELECT is_downloaded 
+FROM pdfs
+WHERE
+  raw_id = ?
+`
+
+func (q *Queries) IsReportDownloaded(ctx context.Context, rawID int64) (bool, error) {
+	row := q.db.QueryRowContext(ctx, isReportDownloaded, rawID)
+	var is_downloaded bool
+	err := row.Scan(&is_downloaded)
+	return is_downloaded, err
+}
+
 const rawInsert = `-- name: RawInsert :one
 INSERT INTO raw (source, json) VALUES (?, ?) RETURNING id
 `
@@ -75,4 +103,28 @@ func (q *Queries) ReportIdExists(ctx context.Context, reportID string) (int64, e
 	var column_1 int64
 	err := row.Scan(&column_1)
 	return column_1, err
+}
+
+const setReportDownloaded = `-- name: SetReportDownloaded :exec
+UPDATE pdfs
+SET is_downloaded = 1
+WHERE
+    raw_id = ?
+`
+
+func (q *Queries) SetReportDownloaded(ctx context.Context, rawID int64) error {
+	_, err := q.db.ExecContext(ctx, setReportDownloaded, rawID)
+	return err
+}
+
+const unsetReportDownloaded = `-- name: UnsetReportDownloaded :exec
+UPDATE pdfs
+SET is_downloaded = 0
+WHERE
+    raw_id = ?
+`
+
+func (q *Queries) UnsetReportDownloaded(ctx context.Context, rawID int64) error {
+	_, err := q.db.ExecContext(ctx, unsetReportDownloaded, rawID)
+	return err
 }

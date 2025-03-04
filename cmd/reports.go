@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,8 +12,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/jadudm/fac-tool/internal/archivedb"
-	"github.com/jadudm/fac-tool/internal/fac"
+	"github.com/jadudm/fac-archive/internal/archivedb"
+	"github.com/jadudm/fac-archive/internal/fac"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -51,22 +50,35 @@ func getReports(cmd *cobra.Command) (int, int64) {
 
 	for _, rid := range rids {
 		url := fac.PdfBase + rid.ReportID
-		// Make subdirs, or we could end up with too many files in one place.
-		// Literally... `ls` and `dir` break on some platforms with too many files.
-		dirPath := filepath.Join(cmd.Flag("report-destination").Value.String(),
-			rid.FacAcceptedDate.Format("2006-01-02"))
 
-		err := os.MkdirAll(dirPath, 0755)
+		ctx := context.Background()
+		raw_id, err := Q.GetRawIdFromReportId(ctx, rid.ReportID)
 		if err != nil {
-			zap.L().Error("could not make destination directory", zap.Error(err))
+			zap.L().Fatal("could not fetch raw_id", zap.String("report_id", rid.ReportID))
 		}
 
-		pdfPath := filepath.Join(dirPath, fmt.Sprintf("%s.pdf", rid.ReportID))
+		report_exists, err := Q.IsReportDownloaded(ctx, raw_id)
+		if err != nil {
+			zap.L().Fatal("could not fetch report download status",
+				zap.Int64("raw_id", raw_id),
+				zap.String("report_id", rid.ReportID))
+		}
 
-		if _, err := os.Stat(pdfPath); err == nil {
+		if report_exists {
 			zap.L().Debug("skipping; report exists",
 				zap.String("report_id", rid.ReportID))
-		} else if errors.Is(err, os.ErrNotExist) {
+		} else {
+			// Make subdirs, or we could end up with too many files in one place.
+			// Literally... `ls` and `dir` break on some platforms with too many files.
+			dirPath := filepath.Join(cmd.Flag("report-destination").Value.String(),
+				rid.FacAcceptedDate.Format("2006-01-02"))
+
+			err := os.MkdirAll(dirPath, 0755)
+			if err != nil {
+				zap.L().Error("could not make destination directory", zap.Error(err))
+			}
+
+			pdfPath := filepath.Join(dirPath, fmt.Sprintf("%s.pdf", rid.ReportID))
 
 			out, err := os.Create(pdfPath)
 			if err != nil {
@@ -93,10 +105,7 @@ func getReports(cmd *cobra.Command) (int, int64) {
 			resp.Body.Close()
 			bytes_downloaded += n
 			reports_downloaded += 1
-
-		} else {
-			// Schrodinger: file may or may not exist. See err for details.
-			// Therefore, do *NOT* use !os.IsNotExist(err) to test for file existence
+			Q.SetReportDownloaded(ctx, raw_id)
 		}
 	}
 

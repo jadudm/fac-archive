@@ -6,23 +6,30 @@ package cmd
 import (
 	"os"
 
-	"github.com/jadudm/fac-tool/internal/config"
+	"github.com/jadudm/fac-archive/internal/config"
 	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "fac-tool",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Use:   "fac-archive",
+	Short: "A tool for archiving and updating Federal Audit Clearinghouse data",
+	Long: `
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+Example use:
+
+Archive all data in the FAC:
+
+fac-archive --sqlite fac.db 
+
+Update everything from the past work week:
+
+fac-update --start-date 2025-03-03 --end-date 2025-03-08 --sqlite fac.db
+
+Download the PDFs for Monday, March 3rd:
+
+fac-update reports --start-date 2025-03-03 --end-date 2025-03-04 --sqlite fac.db
+`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

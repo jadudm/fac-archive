@@ -187,8 +187,8 @@ type Passthrough struct {
 
 type Pdf struct {
 	ID           int64
-	RawID        sql.NullInt64
-	IsDownloaded sql.NullBool
+	RawID        int64
+	IsDownloaded bool
 }
 
 type Raw struct {

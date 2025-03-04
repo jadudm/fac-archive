@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	_ "embed"
 
-	"github.com/jadudm/fac-tool/internal/fac"
+	"github.com/jadudm/fac-archive/internal/fac"
 	_ "modernc.org/sqlite"
 
 	"go.uber.org/zap"

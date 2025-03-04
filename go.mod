@@ -1,16 +1,16 @@
-module github.com/jadudm/fac-tool
+module github.com/jadudm/fac-archive
 
 go 1.23.2
 
-replace github.com/jadudm/fac-tool/internal/config => ./internal/config/
+replace github.com/jadudm/fac-archive/internal/config => ./internal/config/
 
-replace github.com/jadudm/fac-tool/internal/archivedb => ./internal/archivedb/
+replace github.com/jadudm/fac-archive/internal/archivedb => ./internal/archivedb/
 
 require (
-	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	go.uber.org/zap v1.27.0
+	modernc.org/sqlite v1.36.0
 )
 
 require (
@@ -41,6 +41,5 @@ require (
 	modernc.org/libc v1.61.13 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.8.2 // indirect
-	modernc.org/sqlite v1.36.0 // indirect
 
 )

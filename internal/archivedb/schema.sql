@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS pdfs (
   id INTEGER PRIMARY KEY,
-	raw_id INTEGER,
+	raw_id INTEGER NOT NULL,
 	-- url TEXT,
-	is_downloaded BOOLEAN DEFAULT 0
+	is_downloaded BOOLEAN NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS raw (
@@ -33,7 +33,7 @@ END;
 CREATE TABLE IF NOT EXISTS general (
 	id INTEGER PRIMARY KEY,
 	raw_id INTEGER NOT NULL,
-	report_id text NOT NULL,
+	report_id text NOT NULL UNIQUE,
 	auditee_uei text NOT NULL,
 	audit_year integer NOT NULL,
 	auditee_certify_name text NOT NULL,

@@ -1,4 +1,5 @@
 config.yaml
 *.sqlite
 pdfs/**
-fac-tool-*
+fac-archive-*
+*.db

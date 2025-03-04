@@ -1,9 +1,9 @@
-# fac-tool
+# fac-archive
 
 
 ## about
 
-`fac-tool` provides utilities for working with Federal Audit Clearinghouse data (FAC). With it, you can:
+`fac-archive` provides utilities for working with Federal Audit Clearinghouse data (FAC). With it, you can:
 
 1. make a complete copy of the *data* in the FAC
 2. update the data incrementally
@@ -14,22 +14,22 @@ The archive tool can be used to:
 * Back up roughly 10GB of data to an SQLite file
 * Download approximately 2.5TB of audit reports (PDFs)
 
-`fac-tool` is written in Go, and should work on Mac, Windows, and Linux.
+`fac-archive` is written in Go, and should work on Mac, Windows, and Linux.
 
 ## design
 
-`fac-tool` has three subcommands:
+`fac-archive` has three subcommands:
 
-* `fac-tool archive` will create a new archive of all of the FAC data 
-* `fac-tool update` updates an existing archive
-* `fac-tool reports` will download PDFs of audit reports
+* `fac-archive archive` will create a new archive of all of the FAC data 
+* `fac-archive update` updates an existing archive
+* `fac-archive reports` will download PDFs of audit reports
 
 ## configuration
 
 You will need a `config.yaml` file. It must be placed in one of two places:
 
 1. `$HOME/.factool/config.yaml`
-2. A file called `config.yaml` in the same directory as the `fac-tool` executable
+2. A file called `config.yaml` in the same directory as the `fac-archive` executable
 
 The file should have the form:
 
@@ -52,7 +52,7 @@ debug_level: DEBUG
 Running
 
 ```
-fac-tool archive
+fac-archive archive
 ```
 
 will create a timestamped SQLite file in the same directory that the tool is run. During archiving, a small amount of information is logged along the way:

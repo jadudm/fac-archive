@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/jadudm/fac-tool/internal/fac"
+	"github.com/jadudm/fac-archive/internal/fac"
 	"go.uber.org/zap"
 )
 

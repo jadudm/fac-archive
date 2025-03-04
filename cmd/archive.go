@@ -9,16 +9,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
-	"github.com/jadudm/fac-tool/internal/archivedb"
-	"github.com/jadudm/fac-tool/internal/fac"
+	"github.com/jadudm/fac-archive/internal/archivedb"
+	"github.com/jadudm/fac-archive/internal/fac"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
-func archiveTable(table string, db *sql.DB, Q *archivedb.Queries) (int, error) {
+func archiveTable(cmd *cobra.Command, table string, db *sql.DB, Q *archivedb.Queries) (int, error) {
 	rows_retrieved := 0
 
 	for offset := 0; offset <= fac.MaxRows; offset += fac.LimitPerQuery {
@@ -80,34 +81,38 @@ func archiveTable(table string, db *sql.DB, Q *archivedb.Queries) (int, error) {
 }
 
 func archive(cmd *cobra.Command, args []string) {
-	// do this in root.go
-	//config.Init()
 
-	current := time.Now()
-	db_name := fmt.Sprintf("%s-fac.sqlite", current.Format("2006-01-02-15-04-05"))
+	db_name := cmd.Flag("sqlite").Value.String()
+	// db_name := fmt.Sprintf("%s-fac.sqlite", current.Format("2006-01-02-15-04-05"))
 
-	// fmt.Println("archive called")
-	// fmt.Printf("api url: %s\n", viper.GetString("api.url"))
+	if _, err := os.Stat(db_name); err == nil {
+		zap.L().Fatal("exiting; database already exists")
+	} else if errors.Is(err, os.ErrNotExist) {
 
-	db, queries, err := archivedb.CreateSqliteDB(db_name)
-	if err != nil {
-		zap.L().Fatal("could not create database. exiting.")
-	}
-
-	for _, table := range fac.Tables {
-		start := time.Now()
-		rows, err := archiveTable(table, db, queries)
-		elapsed := time.Since(start)
-
+		db, queries, err := archivedb.CreateSqliteDB(db_name)
 		if err != nil {
-			zap.L().Error("could not archive table", zap.String("table", table), zap.Error(err))
+			zap.L().Fatal("could not create database. exiting.")
 		}
 
-		zap.L().Info("rows retrieved",
-			zap.String("table", table),
-			zap.Int("rows", rows),
-			zap.Int64("duration", int64(elapsed.Seconds())))
+		for _, table := range fac.Tables {
+			start := time.Now()
+			rows, err := archiveTable(cmd, table, db, queries)
+			elapsed := time.Since(start)
+
+			if err != nil {
+				zap.L().Error("could not archive table", zap.String("table", table), zap.Error(err))
+			}
+
+			zap.L().Info("rows retrieved",
+				zap.String("table", table),
+				zap.Int("rows", rows),
+				zap.Int64("duration", int64(elapsed.Seconds())))
+		}
+
+	} else {
+		zap.L().Fatal("Does the file exist? Does it not? I cannot tell. Exiting.")
 	}
+
 }
 
 // archiveCmd represents the archive command
@@ -119,7 +124,7 @@ This must be run before any other commands (update, pdfs) can be run.
 
 Usage:
 
-fac-tool archive --sqlite <filename>
+fac-archive archive --sqlite <filename>
 
 The --sqlite flag is required, naming the database that will be created and written to.
 `,
@@ -128,9 +133,4 @@ The --sqlite flag is required, naming the database that will be created and writ
 
 func init() {
 	rootCmd.AddCommand(archiveCmd)
-
-	// at the root
-	// archiveCmd.Flags().String("sqlite", "", "SQLite archive file")
-	// archiveCmd.MarkFlagRequired("sqlite")
-
 }
