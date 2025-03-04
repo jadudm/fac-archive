@@ -10,6 +10,35 @@ import (
 	"time"
 )
 
+const addMetadata = `-- name: AddMetadata :exec
+INSERT INTO metadata
+(key, value)
+VALUES (?, ?)
+`
+
+type AddMetadataParams struct {
+	Key   string
+	Value string
+}
+
+func (q *Queries) AddMetadata(ctx context.Context, arg AddMetadataParams) error {
+	_, err := q.db.ExecContext(ctx, addMetadata, arg.Key, arg.Value)
+	return err
+}
+
+const getMetadata = `-- name: GetMetadata :one
+SELECT value
+FROM metadata
+WHERE key = ?
+`
+
+func (q *Queries) GetMetadata(ctx context.Context, key string) (string, error) {
+	row := q.db.QueryRowContext(ctx, getMetadata, key)
+	var value string
+	err := row.Scan(&value)
+	return value, err
+}
+
 const getRawIdFromReportId = `-- name: GetRawIdFromReportId :one
 SELECT raw_id
 FROM general
@@ -126,5 +155,22 @@ WHERE
 
 func (q *Queries) UnsetReportDownloaded(ctx context.Context, rawID int64) error {
 	_, err := q.db.ExecContext(ctx, unsetReportDownloaded, rawID)
+	return err
+}
+
+const updateMetadata = `-- name: UpdateMetadata :exec
+UPDATE metadata
+SET value = ?
+WHERE
+  key = ?
+`
+
+type UpdateMetadataParams struct {
+	Value string
+	Key   string
+}
+
+func (q *Queries) UpdateMetadata(ctx context.Context, arg UpdateMetadataParams) error {
+	_, err := q.db.ExecContext(ctx, updateMetadata, arg.Value, arg.Key)
 	return err
 }

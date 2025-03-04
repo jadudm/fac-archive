@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/jadudm/fac-archive/internal/archivedb"
 	"github.com/jadudm/fac-archive/internal/fac"
@@ -31,11 +32,25 @@ func updateGeneral(cmd *cobra.Command, db *sql.DB, Q *archivedb.Queries) (int, i
 	already_present := 0
 	objects_retrieved := make([]map[string]any, 0)
 
+	ctx := context.Background()
+	last_updated, err := Q.GetMetadata(ctx, "last_updated")
+	if err != nil {
+		zap.L().Fatal("could not get last updated time", zap.Error(err))
+	}
+
+	last_updated_time, err := time.Parse("2006-01-02", last_updated)
+	if err != nil {
+		zap.L().Error("could not parse last updated time", zap.String("last_updated", last_updated))
+	}
+	// Always start a day before we last updated.
+	last_updated_time = last_updated_time.Add(-25 * time.Hour)
+
 	url := fmt.Sprintf("%s://%s/%s?fac_accepted_date=gte.%s",
 		viper.GetString("api.scheme"),
 		viper.GetString("api.url"),
 		table,
-		cmd.Flag("fac-accepted-date").Value.String(),
+		// cmd.Flag("fac-accepted-date").Value.String(),
+		last_updated_time.Format("2006-01-02"),
 	)
 
 	// Fetch the JSON body
@@ -203,6 +218,11 @@ func update(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	ctx := context.Background()
+	Q.UpdateMetadata(ctx, archivedb.UpdateMetadataParams{
+		Key:   "last_updated",
+		Value: time.Now().Format("2006-01-02"),
+	})
 }
 
 // updateCmd represents the update command
@@ -213,9 +233,9 @@ var updateCmd = &cobra.Command{
 
 Usage:
 
-fac-archive update --sqlite <filename> --fac-accepted-date 2025-03-02
+fac-archive update --sqlite <filename>
 
-This will download all new records that were submitted since the archive was created.
+This will download all new records that were submitted since the archive was last updated.
 
 The filename for the database that will be updated is required. It must exist.
 
@@ -239,7 +259,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 
-	updateCmd.Flags().String("fac-accepted-date", "", "FAC accepted date, inclusive")
-	updateCmd.MarkFlagRequired("fac-accepted-date")
+	//updateCmd.Flags().String("fac-accepted-date", "", "FAC accepted date, inclusive")
+	// updateCmd.MarkFlagRequired("fac-accepted-date")
 
 }

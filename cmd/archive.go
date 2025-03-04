@@ -109,10 +109,14 @@ func archive(cmd *cobra.Command, args []string) {
 				zap.Int64("duration", int64(elapsed.Seconds())))
 		}
 
+		ctx := context.Background()
+		queries.AddMetadata(ctx, archivedb.AddMetadataParams{
+			Key:   "last_updated",
+			Value: time.Now().Format("2006-01-02"),
+		})
 	} else {
 		zap.L().Fatal("Does the file exist? Does it not? I cannot tell. Exiting.")
 	}
-
 }
 
 // archiveCmd represents the archive command

@@ -26,6 +26,10 @@ CREATE TRIGGER IF NOT EXISTS trig_raw_to_pdf
 		;
 END;
 
+CREATE TABLE IF NOT EXISTS metadata (
+	key TEXT UNIQUE NOT NULL,
+	value TEXT UNIQUE NOT NULL
+);
 
 ----------------------------------------------------------
 -- general

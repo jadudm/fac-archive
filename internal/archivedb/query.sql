@@ -33,3 +33,19 @@ UPDATE pdfs
 SET is_downloaded = 0
 WHERE
     raw_id = ?;
+  
+-- name: AddMetadata :exec
+INSERT INTO metadata
+(key, value)
+VALUES (?, ?);
+
+-- name: UpdateMetadata :exec
+UPDATE metadata
+SET value = ?
+WHERE
+  key = ?;
+
+-- name: GetMetadata :one
+SELECT value
+FROM metadata
+WHERE key = ?;

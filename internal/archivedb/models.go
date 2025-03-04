@@ -160,6 +160,11 @@ type General struct {
 	AuditorCertifyTitle                        string
 }
 
+type Metadatum struct {
+	Key   string
+	Value string
+}
+
 type NotesToSefa struct {
 	ID                   int64
 	RawID                int64
