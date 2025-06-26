@@ -20,7 +20,7 @@ func FacGet(url string) ([]byte, error) {
 
 	req.Header = http.Header{
 		"X-API-Key":      {viper.GetString("api.key")},
-		"Accept-Profile": {"api_v1_1_0"},
+		"Accept-Profile": {viper.GetString("api.accept_profile")},
 	}
 
 	try_count := 3

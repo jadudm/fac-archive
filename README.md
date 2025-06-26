@@ -59,6 +59,22 @@ api:
 debug_level: DEBUG
 ```
 
+Other config keys that can be set:
+
+```
+api:
+  accept_profile: api_v1_2_0
+  limit_per_query: 5000
+```
+
+These let the tool grab from different API endpoints, and limit how many records come back per call.
+
+```
+copy_json: false
+```
+
+This flag determines whether or not the triggers will run to copy JSON objects from their raw form into the structured/relational tables. `true` will create relational tables from the JSON objects; `false` will not. The `false` flag is useful if you want to only work with the raw JSON values, and/or if you're concerned the JSON values might violate the constranits imposed on the relational tables (e.g. `NOT NULL`).
+
 ### obtaining a key
 
 Follow the instructions [here](https://www.fac.gov/api/) for obtaining an API key. It will be mailed to you, and you can then paste it into your `config.yaml` file. 
@@ -98,7 +114,35 @@ Once you have downloaded a complete archive (which takes around 30-40m), you can
 fac-archive archive --sqlite fac.db
 ```
 
-The database knows when it was last updated, and will download all new records since its last update.
+The database knows when it was last updated, and will download all new records since its last update. The output will look something like this:
+
+```
+{"level":"info","msg":"number of objects in general","rows_retrieved":422,"already_present":243,"inserted":179}
+{"level":"info","msg":"number of objects in federal_awards","rows_retrieved":3196,"already_present":0,"inserted":3196}
+{"level":"info","msg":"number of objects in findings","rows_retrieved":136,"already_present":0,"inserted":136}
+{"level":"info","msg":"number of objects in findings_text","rows_retrieved":85,"already_present":0,"inserted":85}
+{"level":"info","msg":"number of objects in notes_to_sefa","rows_retrieved":440,"already_present":0,"inserted":440}
+{"level":"info","msg":"number of objects in corrective_action_plans","rows_retrieved":68,"already_present":0,"inserted":68}
+{"level":"info","msg":"number of objects in passthrough","rows_retrieved":2390,"already_present":0,"inserted":2390}
+{"level":"info","msg":"number of objects in secondary_auditors","rows_retrieved":0,"already_present":0,"inserted":0}
+{"level":"info","msg":"number of objects in additional_ueis","rows_retrieved":9,"already_present":0,"inserted":9}
+{"level":"info","msg":"number of objects in additional_eins","rows_retrieved":13,"already_present":0,"inserted":13}
+```
+
+If there are no new records:
+
+```
+{"level":"info","msg":"number of objects in general","rows_retrieved":417,"already_present":417,"inserted":0}
+{"level":"info","msg":"number of objects in federal_awards","rows_retrieved":0,"already_present":0,"inserted":0}
+{"level":"info","msg":"number of objects in findings","rows_retrieved":0,"already_present":0,"inserted":0}
+{"level":"info","msg":"number of objects in findings_text","rows_retrieved":0,"already_present":0,"inserted":0}
+{"level":"info","msg":"number of objects in notes_to_sefa","rows_retrieved":0,"already_present":0,"inserted":0}
+{"level":"info","msg":"number of objects in corrective_action_plans","rows_retrieved":0,"already_present":0,"inserted":0}
+{"level":"info","msg":"number of objects in passthrough","rows_retrieved":0,"already_present":0,"inserted":0}
+{"level":"info","msg":"number of objects in secondary_auditors","rows_retrieved":0,"already_present":0,"inserted":0}
+{"level":"info","msg":"number of objects in additional_ueis","rows_retrieved":0,"already_present":0,"inserted":0}
+{"level":"info","msg":"number of objects in additional_eins","rows_retrieved":0,"already_present":0,"inserted":0}
+```
 
 ## downloading report PDFs
 

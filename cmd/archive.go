@@ -19,21 +19,29 @@ import (
 	"go.uber.org/zap"
 )
 
-func archiveTable(cmd *cobra.Command, table string, db *sql.DB, Q *archivedb.Queries) (int, error) {
+func archiveTable(table string, db *sql.DB, Q *archivedb.Queries) (int, error) {
 	rows_retrieved := 0
+	var limit_per_query int
+	if viper.GetInt("api.limit_per_query") != 0 {
+		limit_per_query = viper.GetInt("api.limit_per_query")
+	} else {
+		limit_per_query = fac.LimitPerQuery
+	}
 
-	for offset := 0; offset <= fac.MaxRows; offset += fac.LimitPerQuery {
+	for offset := 0; offset <= fac.MaxRows; offset += limit_per_query {
 		// The query URL communicates the limit and offset, so that we
 		// walk the entire dataset in a windowed manner. 0-20K, 20001-40K, etc.
 		url := fmt.Sprintf("%s://%s/%s?limit=%d&offset=%d",
 			viper.GetString("api.scheme"),
 			viper.GetString("api.url"),
 			table,
-			fac.LimitPerQuery,
+			limit_per_query,
 			offset,
 		)
 
-		zap.L().Info("fetching", zap.String("url", url))
+		zap.L().Info("fetching",
+			zap.String("accept_profile", viper.GetString("api.accept_profile")),
+			zap.String("url", url))
 
 		// Fetch the JSON body
 		body, err := fac.FacGet(url)
@@ -77,26 +85,40 @@ func archiveTable(cmd *cobra.Command, table string, db *sql.DB, Q *archivedb.Que
 	}
 
 	// Should not get here.
-	return -1, errors.New(fmt.Sprintf("could not archive %s", table))
+	return -1, fmt.Errorf("could not archive %s", table)
 }
 
 func archive(cmd *cobra.Command, args []string) {
 
-	db_name := cmd.Flag("sqlite").Value.String()
-	// db_name := fmt.Sprintf("%s-fac.sqlite", current.Format("2006-01-02-15-04-05"))
+	// var db_name string
+	// REQUIRED FLAGS
+	// cmd.Flags().StringVar(&db_name, "sqlite", "", "SQLite database name")
+	// cmd.MarkFlagRequired("sqlite")
 
-	if _, err := os.Stat(db_name); err == nil {
+	// OPTIONAL FLAGS
+	// var api_version string
+	// cmd.Flags().StringVar(&api_version, "api_version", "api_v1_1_0", "FAC API version")
+
+	if _, err := os.Stat(viper.GetString("sqlite")); err == nil {
 		zap.L().Fatal("exiting; database already exists")
 	} else if errors.Is(err, os.ErrNotExist) {
 
-		db, queries, err := archivedb.CreateSqliteDB(db_name)
+		db, queries, err := archivedb.CreateSqliteDB(viper.GetString("sqlite"))
 		if err != nil {
 			zap.L().Fatal("could not create database. exiting.")
 		}
 
+		// Set the internal flag so we know if we should run the triggers
+		// that copy the JSON to structured tables
+		ctx := context.Background()
+		queries.AddMetadata(ctx, archivedb.AddMetadataParams{
+			Key:   "copy_json",
+			Value: viper.GetString("copy_json"),
+		})
+
 		for _, table := range fac.Tables {
 			start := time.Now()
-			rows, err := archiveTable(cmd, table, db, queries)
+			rows, err := archiveTable(table, db, queries)
 			elapsed := time.Since(start)
 
 			if err != nil {
@@ -109,13 +131,14 @@ func archive(cmd *cobra.Command, args []string) {
 				zap.Int64("duration", int64(elapsed.Seconds())))
 		}
 
-		ctx := context.Background()
+		ctx = context.Background()
 		queries.AddMetadata(ctx, archivedb.AddMetadataParams{
 			Key:   "last_updated",
 			Value: time.Now().Format("2006-01-02"),
 		})
+
 	} else {
-		zap.L().Fatal("Does the file exist? Does it not? I cannot tell. Exiting.")
+		zap.L().Fatal("Does the database exist? Does it not? I cannot tell. Exiting.")
 	}
 }
 

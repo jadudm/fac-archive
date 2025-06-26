@@ -8,6 +8,7 @@ import (
 
 	"github.com/jadudm/fac-archive/internal/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -55,5 +56,6 @@ func init() {
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().String("sqlite", "", "SQLite archive file")
 	rootCmd.MarkPersistentFlagRequired("sqlite")
+	viper.BindPFlag("sqlite", rootCmd.PersistentFlags().Lookup("sqlite"))
 
 }

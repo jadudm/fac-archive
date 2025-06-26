@@ -102,7 +102,9 @@ CREATE TABLE IF NOT EXISTS general (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_general 
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'general'
+  WHEN 
+		new.source = 'general' 
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO general 
 	(
@@ -268,7 +270,9 @@ CREATE TABLE IF NOT EXISTS federal_awards (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_federal_awards 
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'federal_awards'
+  WHEN 
+		new.source = 'federal_awards'
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO federal_awards
 	(
@@ -349,7 +353,9 @@ CREATE TABLE IF NOT EXISTS findings (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_findings
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'findings'
+  WHEN 
+		new.source = 'findings'
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO findings
 	(
@@ -410,7 +416,9 @@ CREATE TABLE IF NOT EXISTS notes_to_sefa (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_notes_to_sefa
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'notes_to_sefa'
+  WHEN 
+		new.source = 'notes_to_sefa'
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO notes_to_sefa
 	(
@@ -458,7 +466,9 @@ CREATE TABLE IF NOT EXISTS findings_text (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_findings_text
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'findings_text'
+  WHEN 
+		new.source = 'findings_text'
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO findings_text
 	(
@@ -498,7 +508,9 @@ CREATE TABLE IF NOT EXISTS additional_ueis (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_additional_ueis
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'additional_ueis'
+  WHEN 
+		new.source = 'additional_ueis'
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO additional_ueis
 	(
@@ -536,7 +548,9 @@ CREATE TABLE IF NOT EXISTS corrective_action_plans (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_corrective_action_plans
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'corrective_action_plans'
+  WHEN 
+		new.source = 'corrective_action_plans'
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO corrective_action_plans
 	(
@@ -577,7 +591,9 @@ CREATE TABLE IF NOT EXISTS passthrough (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_passthrough
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'passthrough'
+  WHEN 
+		new.source = 'passthrough'
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO passthrough
 	(
@@ -625,7 +641,9 @@ CREATE TABLE IF NOT EXISTS secondary_auditors (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_secondary_auditors
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'secondary_auditors'
+  WHEN 
+		new.source = 'secondary_auditors'
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO secondary_auditors
 	(
@@ -678,7 +696,9 @@ CREATE TABLE IF NOT EXISTS additional_eins (
 CREATE TRIGGER IF NOT EXISTS trig_raw_to_additional_eins
   AFTER INSERT 
   ON raw
-  WHEN new.source = 'additional_eins'
+  WHEN 
+		new.source = 'additional_eins'
+		AND cast((SELECT value FROM metadata WHERE key = 'copy_json') as BOOL)
 BEGIN
 	INSERT INTO additional_eins
 	(

@@ -46,8 +46,8 @@ func Init() {
 
 	viper.SetConfigName("config")         // name of config file (without extension)
 	viper.SetConfigType("yaml")           // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath("$HOME/.factool") // call multiple times to add many search paths
-	viper.AddConfigPath(".")              // optionally look for config in the working directory
+	viper.AddConfigPath(".")              // look for config in the working directory first
+	viper.AddConfigPath("$HOME/.factool") // then look in home
 
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {
